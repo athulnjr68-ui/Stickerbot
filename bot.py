@@ -11,6 +11,14 @@ APP_URL = "https://your-app-name.onrender.com"
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 
+@server.route('/', methods=['GET', 'POST'])
+def webhook():
+    json_string = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return "!", 200
+
+@bot.message_handler(commands=['start'])
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     bot.reply_to(message, "ഹായ്! 👋 ഞാൻ 24/7 ലൈവ് ആണ്! എനിക്ക് ഫോട്ടോ അയക്കൂ, സ്റ്റിക്കർ തരാം!")
