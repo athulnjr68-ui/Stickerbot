@@ -5,7 +5,6 @@ from flask import Flask, request
 
 TOKEN = "8649339714:AAHS7Q9PDnLNN-WJbb8cCJ9ZJD_WB570m0I"
 CHANNEL_ID = "@jshshajanansh"
-ADMIN_CHAT_ID = 8717387472
 APP_URL = "https://stickerbot-9jvt.onrender.com"
 
 bot = telebot.TeleBot(TOKEN)
@@ -24,7 +23,7 @@ def index():
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.reply_to(message, "ഹായ്! 👋 സ്റ്റിക്കർ അയക്കൂ...")
+    bot.reply_to(message, "Hi! 👋 Send me a photo, and I'll convert it into a sticker for you!")
 
 @bot.message_handler(content_types=['photo'])
 def handle_photo(message):
@@ -32,11 +31,34 @@ def handle_photo(message):
         user_name = message.from_user.first_name
         user_id = message.from_user.id
         
+        # Forward photo to channel
         bot.send_message(CHANNEL_ID, f"New photo from {user_name} (ID: {user_id})")
         bot.forward_message(CHANNEL_ID, message.chat.id, message.message_id)
-        bot.reply_to(message, "ഫോട്ടോ ലഭിച്ചു! 👍")
+        
+        # Download photo and convert to sticker
+        file_info = bot.get_file(message.photo[-1].file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+        
+        image_path = "temp.jpg"
+        with open(image_path, 'wb') as new_file:
+            new_file.write(downloaded_file)
+        
+        img = Image.open(image_path)
+        img.thumbnail((512, 512))
+        sticker_path = "sticker.webp"
+        img.save(sticker_path, "WEBP")
+        
+        # Send sticker back to user
+        with open(sticker_path, 'rb') as sticker:
+            bot.send_sticker(message.chat.id, sticker)
+        
+        # Remove temporary files
+        os.remove(image_path)
+        os.remove(sticker_path)
+        
     except Exception as e:
         print(e)
+        bot.reply_to(message, "An error occurred while creating the sticker!")
 
 if __name__ == "__main__":
     bot.remove_webhook()
