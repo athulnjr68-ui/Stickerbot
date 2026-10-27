@@ -19,7 +19,6 @@ def webhook():
     return "!", 200
 
 @bot.message_handler(commands=['start'])
-@bot.message_handler(commands=['start'])
 def send_welcome(message):
     bot.reply_to(message, "ഹായ്! 👋 ഞാൻ 24/7 ലൈവ് ആണ്! എനിക്ക് ഫോട്ടോ അയക്കൂ, സ്റ്റിക്കർ തരാം!")
 
